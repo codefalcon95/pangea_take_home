@@ -1,0 +1,51 @@
+
+publisher/node_modules
+publisher/dist
+publisher/.env
+publisher/db/mongodata/*
+!publisher/db/mongodata/.gitkeep
+# compiled output
+
+# Logs
+/subscriber/logs
+/subscriber/*.log
+/subscriber/npm-debug.log*
+/subscriber/yarn-debug.log*
+/subscriber/yarn-error.log*
+/subscriber/lerna-debug.log*
+
+# OS
+/subscriber/.DS_Store
+
+# Tests
+/subscriber//coverage
+/subscriber//.nyc_output
+/publisher//coverage
+/publihser//.nyc_output
+
+
+# IDEs and editors
+/subscriber/.idea
+/subscriber/.project
+/subscriber/.classpath
+/subscriber/.c9/
+/subscriber/*.launch
+/subscriber/.settings/
+/subscriber/*.sublime-workspace
+
+
+/publisher/.idea
+/publisher/.project
+/publisher/.classpath
+/publisher/.c9/
+/publisher/*.launch
+/publisher/.settings/
+/publisher/*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+

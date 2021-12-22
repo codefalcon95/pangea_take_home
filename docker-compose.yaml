@@ -1,0 +1,57 @@
+version: "3.4"
+
+services:
+  publish_service:
+    build:
+      context: ./publisher
+      dockerfile: Dockerfile
+      target: dev
+    image: pangea_publisher_service
+    restart: unless-stopped
+    env_file: ./publisher/.env
+    ports:
+      - 8000:8000
+    volumes:
+      - ./publisher/src:/usr/publisher/src
+    command: npm run start:dev
+    depends_on:
+      - publisher_db
+    networks:
+      - pangea-network
+
+  publisher_db:
+    build:
+      context: ./publisher/db
+      dockerfile: Dockerfile
+    container_name: pangea_publisher_db
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+      - MONGO_INITDB_DATABASE=publisher_db
+    volumes:
+      - ./publisher/db/mongodata:/data/db
+    networks:
+      - pangea-network
+    ports:
+      - "27017"
+
+  subscriber_service:
+    build:
+      context: ./subscriber
+      dockerfile: Dockerfile
+      target: dev
+    image: pangea_subscriber_service
+    restart: unless-stopped
+    env_file: ./subscriber/.env
+    ports:
+      - 9000:9000
+    volumes:
+      - ./subscriber/src:/usr/subscriber/src
+    command: npm run start:dev
+    networks:
+      - pangea-network
+  
+networks:
+  pangea-network:
+    driver: bridge
