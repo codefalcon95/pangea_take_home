@@ -14,7 +14,6 @@ FROM base AS dev
 COPY nest-cli.json \
     tsconfig.* \ 
     *env \
-    wait-for.sh \
     #  .eslintrc.js \
     #  .eslintrc.js \
     #  .prettierrc \

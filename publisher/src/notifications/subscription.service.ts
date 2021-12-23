@@ -4,8 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { lastValueFrom } from 'rxjs';
 import {
   Subscription,
   SubscriptionDocument,
@@ -17,6 +19,7 @@ export class SubscriptionService {
     @InjectModel(Subscription.name)
     private subscriptionModel: Model<SubscriptionDocument>,
     private httpService: HttpService,
+    private eventEmitter2: EventEmitter2,
   ) {}
 
   // subscribe to a topic
@@ -50,7 +53,6 @@ export class SubscriptionService {
   async publishToTopic(topic: string, body: any) {
     // fetch topic fields
     const topic_ = topic.trim().replace(/ /g, '_');
-    const body_ = body;
     const subscription = await this.subscriptionModel.findOne({
       topic: topic_,
     });
@@ -60,25 +62,34 @@ export class SubscriptionService {
     }
     // publish to all subscribed url
     const urls = subscription.urls;
-    const requests = urls.map((url) => {
-      this.httpService.post(url, {
-        topic,
-        data: body_,
-      });
-    });
     try {
-      const result = await Promise.all(requests);
-      result.map((request) => {
-        // log requests here
-        console.log(request);
+      // throw event to process
+      this.eventEmitter2.emit('send.request', {
+        urls,
+        topic,
+        body,
       });
       return {
-        data: `message published to ${result.length} successfully`,
+        data: `message published successfully`,
       };
     } catch (error) {
       throw new BadRequestException(
         'Not all message was published successfully, please check the log to retry',
       );
     }
+  }
+
+  @OnEvent('send.request')
+  async sendRequestToServers({ urls, topic, body }) {
+    await Promise.all(
+      urls.map((url) => {
+        lastValueFrom(
+          this.httpService.post(url, {
+            topic,
+            data: body,
+          }),
+        );
+      }),
+    );
   }
 }

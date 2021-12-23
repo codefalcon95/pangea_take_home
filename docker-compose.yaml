@@ -14,10 +14,7 @@ services:
     volumes:
       - ./publisher/src:/usr/publisher/src
     command: npm run start:dev
-    depends_on:
-      - publisher_db
-    networks:
-      - pangea-network
+    
 
   publisher_db:
     build:
@@ -31,10 +28,8 @@ services:
       - MONGO_INITDB_DATABASE=publisher_db
     volumes:
       - ./publisher/db/mongodata:/data/db
-    networks:
-      - pangea-network
     ports:
-      - "27017"
+      - "27017:27017"
 
   subscriber_service:
     build:
@@ -49,9 +44,5 @@ services:
     volumes:
       - ./subscriber/src:/usr/subscriber/src
     command: npm run start:dev
-    networks:
-      - pangea-network
   
-networks:
-  pangea-network:
-    driver: bridge
+  

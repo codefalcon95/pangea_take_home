@@ -14,7 +14,6 @@ FROM base AS dev
 COPY nest-cli.json \
     tsconfig.* \ 
     *env \
-    wait-for.sh \
     #  .eslintrc.js \
     #  .eslintrc.js \
     #  .prettierrc \
@@ -38,7 +37,7 @@ COPY --from=base /usr/publisher/node_modules/ ./node_modules/
 
 # expose application port 
 
-EXPOSE 9000
+EXPOSE 8000
 # start
 CMD node dist/main.js;
 
