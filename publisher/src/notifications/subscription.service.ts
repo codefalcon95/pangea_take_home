@@ -1,11 +1,12 @@
 import { HttpService } from '@nestjs/axios';
+import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
+import { Queue } from 'bull';
 import { Model } from 'mongoose';
 import { lastValueFrom } from 'rxjs';
 import {
@@ -16,10 +17,10 @@ import {
 @Injectable()
 export class SubscriptionService {
   constructor(
+    @InjectQueue('notification') private readonly notificationQueue: Queue,
     @InjectModel(Subscription.name)
     private subscriptionModel: Model<SubscriptionDocument>,
     private httpService: HttpService,
-    private eventEmitter2: EventEmitter2,
   ) {}
 
   // subscribe to a topic
@@ -64,11 +65,12 @@ export class SubscriptionService {
     const urls = subscription.urls;
     try {
       // throw event to process
-      this.eventEmitter2.emit('send.request', {
+      await this.notificationQueue.add('notification:send', {
         urls,
         topic,
         body,
       });
+
       return {
         data: `message published successfully`,
       };
@@ -79,8 +81,7 @@ export class SubscriptionService {
     }
   }
 
-  @OnEvent('send.request')
-  async sendRequestToServers({ urls, topic, body }) {
+  async sendRequestToServers(urls, topic, body) {
     await Promise.all(
       urls.map((url) => {
         lastValueFrom(
